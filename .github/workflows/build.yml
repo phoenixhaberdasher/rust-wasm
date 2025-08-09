@@ -1,4 +1,4 @@
-name: Build and Deploy Rust WASM to GitHub Pages
+name: Build and Deploy Rust WASM
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,7 +30,7 @@ jobs:
           git config --global user.email "github-actions@github.com"
 
           git add pkg
-          git commit -m "Add built WASM files to pkg/" || echo "No changes to commit"
+          git commit -m "Update pkg with latest WASM build" || echo "No changes to commit"
           git push origin main
 
       - name: 🚀 Deploy pkg to GitHub Pages
