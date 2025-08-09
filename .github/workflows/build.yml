@@ -27,6 +27,7 @@ jobs:
 
       - name: Build WASM
         run: |
+          set -e
           wasm-pack build --target web
           mkdir dist
           cp index.html dist/
