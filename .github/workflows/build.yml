@@ -1,4 +1,4 @@
-name: Build and Deploy Rust WASM
+name: Build and Deploy Rust WASM to GitHub Pages
 
 on:
   push:
@@ -29,24 +29,20 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          cp -r pkg/* .
-          git add rust_wasm.*
-          git add *.wasm*
-          git add package.json README.md
-
-          git commit -m "Add built WASM files to main branch" || echo "No changes to commit"
+          git add pkg
+          git commit -m "Add built WASM files to pkg/" || echo "No changes to commit"
           git push origin main
 
-      - name: 🚀 Deploy to GitHub Pages
+      - name: 🚀 Deploy pkg to GitHub Pages
         run: |
           git fetch origin
           git worktree add gh-pages origin/gh-pages || git worktree add gh-pages
 
-          rm -rf gh-pages/*
+          rm -rf gh-pages/pkg
           mkdir -p gh-pages/pkg
           cp -r pkg/* gh-pages/pkg/
 
           cd gh-pages
-          git add .
+          git add pkg
           git commit -m "Deploy pkg to GitHub Pages" || echo "No changes to commit"
           git push origin HEAD:gh-pages --force
