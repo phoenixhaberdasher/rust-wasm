@@ -31,18 +31,14 @@ jobs:
           mkdir dist
           cp index.html dist/
           cp -r pkg dist/
+          touch dist/.nojekyll
 
       - name: Verify dist contents
-        run: |
-          echo "Verifying dist directory contents..."
-          ls -R dist
-          echo "Expected files:"
-          echo "- dist/index.html"
-          echo "- dist/pkg/rust_wasm.js"
-          echo "- dist/pkg/rust_wasm_bg.wasm"
+        run: ls -R dist
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          force_orphan: true
