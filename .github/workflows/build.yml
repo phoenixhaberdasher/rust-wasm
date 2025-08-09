@@ -38,8 +38,8 @@ jobs:
           ls -R dist
           echo "Expected files:"
           echo "- dist/index.html"
-          echo "- dist/pkg/rust_wasm_minimal.js"
-          echo "- dist/pkg/rust_wasm_minimal_bg.wasm"
+          echo "- dist/pkg/rust_wasm.js"
+          echo "- dist/pkg/rust_wasm_bg.wasm"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
