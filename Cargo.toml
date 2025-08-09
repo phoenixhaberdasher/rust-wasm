@@ -1,5 +1,5 @@
 [package]
-name = "rust_wasm"
+name = "wasm-image-renderer"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,5 +8,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 wasm-bindgen = "0.2"
-console_error_panic_hook = "0.1"
-web-sys = { version = "0.3", features = ["console"] }
+web-sys = { version = "0.3", features = ["Window", "Document", "HtmlCanvasElement", "CanvasRenderingContext2d"] }
+js-sys = "0.3"
