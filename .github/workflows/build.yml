@@ -1,52 +1,35 @@
-name: Build and Deploy to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main
-
-permissions:
-  contents: write
+      - main  # or your default branch
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v3
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-
-      - name: Add wasm32 target
-        run: rustup target add wasm32-unknown-unknown
-
-      - name: Install wasm-pack
-        run: cargo install wasm-pack
-
-      - name: Build WASM
+      - name: Build project
         run: |
-          set -e
-          echo "🔧 Building WASM..."
-          wasm-pack build --target web --verbose
-          echo "✅ Build complete. Copying files..."
-          mkdir dist
-          cp index.html dist/
-          cp -r pkg dist/
-          touch dist/.nojekyll
-
-      - name: Verify dist contents
-        run: |
-          echo "📦 Verifying dist directory contents..."
+          echo "📦 Building..."
+          # Your build command here
+          # Example: wasm-pack build --target web --out-dir dist/pkg
           ls -R dist
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          force_orphan: true
+      - name: Deploy to gh-pages
+        run: |
+          echo "🚀 Deploying to gh-pages..."
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          # Create orphan branch
+          git checkout --orphan gh-pages
+          git rm -rf .
+          cp -r dist/* .
+          git add .
+          git commit -m "Deploy to GitHub Pages"
+          git push -f origin gh-pages
