@@ -29,20 +29,28 @@ jobs:
           echo "📦 Verifying pkg contents..."
           ls -R pkg
 
-      - name: 💾 Commit pkg to main branch
+      - name: 💾 Deploy pkg to main branch
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          git add pkg
-          git status
-          git diff --cached
+          git fetch origin
+          git worktree add main-deploy origin/main || git worktree add main-deploy
 
-          git commit -m "Update pkg directory with latest WASM build" || echo "No changes to commit"
-          git push origin main
+          rm -rf main-deploy/pkg
+          mkdir -p main-deploy/pkg
+          cp -r pkg/* main-deploy/pkg/
+
+          cd main-deploy
+          git add pkg
+          git commit -m "Deploy pkg to main branch" || echo "No changes to commit"
+          git push origin HEAD:main --force
 
       - name: 🚀 Deploy pkg to GitHub Pages
         run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
           git fetch origin
           git worktree add gh-pages origin/gh-pages || git worktree add gh-pages
 
