@@ -1,0 +1,15 @@
+{
+  "name": "blue_circle",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "blue_circle_bg.wasm",
+    "blue_circle.js",
+    "blue_circle.d.ts"
+  ],
+  "main": "blue_circle.js",
+  "types": "blue_circle.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
