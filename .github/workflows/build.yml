@@ -31,7 +31,9 @@ jobs:
       - name: Build WASM
         run: |
           set -e
-          wasm-pack build --target web
+          echo "🔧 Building WASM..."
+          wasm-pack build --target web --verbose
+          echo "✅ Build complete. Copying files..."
           mkdir dist
           cp index.html dist/
           cp -r pkg dist/
@@ -39,7 +41,7 @@ jobs:
 
       - name: Verify dist contents
         run: |
-          echo "Verifying dist directory contents..."
+          echo "📦 Verifying dist directory contents..."
           ls -R dist
 
       - name: Deploy to GitHub Pages
