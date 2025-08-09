@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,7 +33,13 @@ jobs:
           cp -r pkg dist/
 
       - name: Verify dist contents
-        run: ls -R dist
+        run: |
+          echo "Verifying dist directory contents..."
+          ls -R dist
+          echo "Expected files:"
+          echo "- dist/index.html"
+          echo "- dist/pkg/rust_wasm_minimal.js"
+          echo "- dist/pkg/rust_wasm_minimal_bg.wasm"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
