@@ -1,2 +1,2 @@
 # rust-wasm
-Rust-Wasm
+Rust Wasm
