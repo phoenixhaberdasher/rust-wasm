@@ -9,7 +9,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required to push changes
+      contents: write
 
     steps:
       - name: 🛎️ Checkout main branch
@@ -40,7 +40,7 @@ jobs:
             fi
           done
 
-      - name: 💾 Deploy all pkg folders to main branch
+      - name: 💾 Deploy all pkg folders and HTML files to main branch
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
@@ -53,41 +53,21 @@ jobs:
           mkdir -p main-deploy/pkg
           cp -r pkg/* main-deploy/pkg/
 
-          # Copy image crate pkgs
+          # Copy image crate pkgs and HTML files
           for dir in images/*; do
             if [ -d "$dir/pkg" ]; then
               mkdir -p "main-deploy/$dir/pkg"
               cp -r "$dir/pkg/"* "main-deploy/$dir/pkg/"
             fi
+            for html in "$dir"/*.html; do
+              if [ -f "$html" ]; then
+                mkdir -p "main-deploy/$dir"
+                cp "$html" "main-deploy/$dir/"
+              fi
+            done
           done
 
           cd main-deploy
           git add .
-          git commit -m "Deploy all pkg folders to main branch" || echo "No changes to commit"
+          git commit -m "Deploy all pkg folders and HTML files to main branch" || echo "No changes to commit"
           git push origin HEAD:main --force
-
-      - name: 🚀 Deploy all pkg folders to GitHub Pages
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-
-          git fetch origin
-          git worktree add gh-pages origin/gh-pages || git worktree add gh-pages
-
-          # Copy root pkg
-          rm -rf gh-pages/pkg
-          mkdir -p gh-pages/pkg
-          cp -r pkg/* gh-pages/pkg/
-
-          # Copy image crate pkgs
-          for dir in images/*; do
-            if [ -d "$dir/pkg" ]; then
-              mkdir -p "gh-pages/$dir/pkg"
-              cp -r "$dir/pkg/"* "gh-pages/$dir/pkg/"
-            fi
-          done
-
-          cd gh-pages
-          git add .
-          git commit -m "Deploy all pkg folders to GitHub Pages" || echo "No changes to commit"
-          git push origin HEAD:gh-pages --force
