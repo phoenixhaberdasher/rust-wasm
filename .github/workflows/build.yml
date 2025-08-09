@@ -22,6 +22,9 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Add wasm32 target
+        run: rustup target add wasm32-unknown-unknown
+
       - name: Install wasm-pack
         run: cargo install wasm-pack
 
@@ -35,7 +38,9 @@ jobs:
           touch dist/.nojekyll
 
       - name: Verify dist contents
-        run: ls -R dist
+        run: |
+          echo "Verifying dist directory contents..."
+          ls -R dist
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
