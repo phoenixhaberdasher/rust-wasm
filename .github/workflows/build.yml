@@ -12,10 +12,11 @@ jobs:
       contents: write  # Required to push changes
 
     steps:
-      - name: 🛎️ Checkout source
+      - name: 🛎️ Checkout main branch
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Needed to push back to main
+          ref: main
+          fetch-depth: 0
 
       - name: 🦀 Install Rust and wasm-pack
         run: |
@@ -30,14 +31,14 @@ jobs:
 
       - name: 💾 Commit pkg to main branch
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-          git checkout main
-          git pull origin main
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
 
           git add pkg
-          git commit -m "Update pkg with latest WASM build" || echo "No changes to commit"
+          git status
+          git diff --cached
+
+          git commit -m "Update pkg directory with latest WASM build" || echo "No changes to commit"
           git push origin main
 
       - name: 🚀 Deploy pkg to GitHub Pages
