@@ -3,6 +3,8 @@ use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, Window, Document};
 use js_sys::Math;
 use std::f64::consts::PI;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
@@ -17,10 +19,9 @@ pub fn start() -> Result<(), JsValue> {
         .unwrap()
         .dyn_into::<CanvasRenderingContext2d>()?;
 
-    let f = Rc::new(RefCell::new(None));
+    let f: Rc<RefCell<Option<Closure<dyn FnMut()>>>> = Rc::new(RefCell::new(None));
     let g = f.clone();
 
-    // Animation loop
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         draw_spray(&context);
         let _ = window
@@ -33,16 +34,15 @@ pub fn start() -> Result<(), JsValue> {
     Ok(())
 }
 
-use std::cell::RefCell;
-use std::rc::Rc;
-
 fn draw_spray(ctx: &CanvasRenderingContext2d) {
     let width = ctx.canvas().unwrap().width() as f64;
     let height = ctx.canvas().unwrap().height() as f64;
 
+    // Clear canvas
     ctx.set_fill_style(&JsValue::from_str("white"));
     ctx.fill_rect(0.0, 0.0, width, height);
 
+    // Spray can nozzle position
     let nozzle_x = width / 2.0;
     let nozzle_y = height - 50.0;
     let spread = 100.0;
@@ -90,4 +90,3 @@ fn random_color() -> &'static str {
     let index = (Math::floor(Math::random() * colors.len() as f64)) as usize;
     colors[index]
 }
-
