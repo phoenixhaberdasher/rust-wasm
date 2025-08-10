@@ -59,7 +59,7 @@ pub fn start() -> Result<(), JsValue> {
 
 fn resize_and_draw(canvas: &HtmlCanvasElement, ctx: &CanvasRenderingContext2d) {
     let rect = canvas
-        .dyn_ref::<Element>()
+        .dyn_ref::<web_sys::HtmlElement>()
         .unwrap()
         .get_bounding_client_rect();
 
