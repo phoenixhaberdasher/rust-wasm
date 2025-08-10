@@ -12,9 +12,17 @@ pub fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
     ctx.set_stroke_style(&"#000000".into()); // Black
     ctx.stroke_rect(0.0, 0.0, width, height);
 
+    // Sanity check: black squares in corners
+    ctx.set_fill_style(&"#000000".into()); // Black
+    let size = 5.0;
+    ctx.fill_rect(0.0, 0.0, size, size); // Top-left
+    ctx.fill_rect(width - size, 0.0, size, size); // Top-right
+    ctx.fill_rect(0.0, height - size, size, size); // Bottom-left
+    ctx.fill_rect(width - size, height - size, size, size); // Bottom-right
+
     // Centered can
     let can_x = width / 2.0;
-    let can_y = height / 2.0 + 40.0; // Slightly lower to fit spray
+    let can_y = height / 2.0 + 40.0;
 
     let spray_origin_x = can_x;
     let spray_origin_y = can_y - 80.0 - 10.0 - 5.0;
