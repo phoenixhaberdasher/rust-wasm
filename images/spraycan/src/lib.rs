@@ -1,10 +1,11 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{
-    window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, EventTarget, console,
+    window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, EventTarget, console, Element,
 };
 use std::f64::consts::PI;
 use rand::Rng;
+
 
 fn log(msg: &str) {
     console::log_1(&msg.into());
