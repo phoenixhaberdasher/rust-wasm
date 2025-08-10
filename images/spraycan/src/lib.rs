@@ -75,18 +75,18 @@ fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
     log("🎨 Starting draw function");
 
     // Background
-    ctx.set_fill_style_with_str("#ADD8E6").unwrap();
+    ctx.set_fill_style(&JsValue::from_str("#ADD8E6"));
     ctx.fill_rect(0.0, 0.0, width, height);
     log("🟦 Background filled");
 
     // Border
-    ctx.set_stroke_style_with_str("#000000").unwrap();
+    ctx.set_stroke_style(&JsValue::from_str("#000000"));
     ctx.stroke_rect(0.0, 0.0, width, height);
     log("⬛ Border drawn");
 
     // Corner squares
     let size = 5.0;
-    ctx.set_fill_style_with_str("#000000").unwrap();
+    ctx.set_fill_style(&JsValue::from_str("#000000"));
     ctx.fill_rect(0.0, 0.0, size, size);
     ctx.fill_rect(width - size, 0.0, size, size);
     ctx.fill_rect(0.0, height - size, size, size);
@@ -104,7 +104,7 @@ fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
     log(&format!("🎯 Spray origin at ({}, {})", spray_origin_x, spray_origin_y));
 
     // Spray origin dot
-    ctx.set_fill_style_with_str("#FF0000").unwrap();
+    ctx.set_fill_style(&JsValue::from_str("#FF0000"));
     ctx.begin_path();
     ctx.arc(spray_origin_x, spray_origin_y, 4.0, 0.0, 2.0 * PI).unwrap();
     ctx.fill();
@@ -123,9 +123,9 @@ fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
 }
 
 fn draw_spray_can(ctx: &CanvasRenderingContext2d, x: f64, y: f64) {
-    ctx.set_fill_style_with_str("#808080").unwrap();
+    ctx.set_fill_style(&JsValue::from_str("#808080"));
     ctx.fill_rect(x - 20.0, y - 80.0, 40.0, 80.0); // Can body
-    ctx.set_fill_style_with_str("#000000").unwrap();
+    ctx.set_fill_style(&JsValue::from_str("#000000"));
     ctx.fill_rect(x - 5.0, y - 90.0, 10.0, 10.0);  // Nozzle
 }
 
@@ -139,7 +139,7 @@ fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread:
     let x2 = x + length * right_angle.cos();
     let y2 = y + length * right_angle.sin();
 
-    ctx.set_fill_style_with_str("rgba(255, 0, 0, 0.2)").unwrap();
+    ctx.set_fill_style(&JsValue::from_str("rgba(255, 0, 0, 0.2)"));
     ctx.begin_path();
     ctx.move_to(x, y);
     ctx.line_to(x1, y1);
@@ -151,7 +151,7 @@ fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread:
 fn draw_particles(ctx: &CanvasRenderingContext2d, x: f64, y: f64, spread: f64, count: usize, angle: f64) {
     let mut rng = rand::thread_rng();
 
-    ctx.set_fill_style_with_str("#FF0000").unwrap();
+    ctx.set_fill_style(&JsValue::from_str("#FF0000"));
 
     for _ in 0..count {
         let a = angle - spread / 2.0 + rng.gen::<f64>() * spread;
