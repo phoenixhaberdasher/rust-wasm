@@ -1,0 +1,15 @@
+{
+  "name": "spray_can",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "spray_can_bg.wasm",
+    "spray_can.js",
+    "spray_can.d.ts"
+  ],
+  "main": "spray_can.js",
+  "types": "spray_can.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
