@@ -4,10 +4,18 @@ use std::f64::consts::PI;
 
 #[wasm_bindgen]
 pub fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
-    ctx.clear_rect(0.0, 0.0, width, height);
+    // Background
+    ctx.set_fill_style(&"#ADD8E6".into()); // Light blue
+    ctx.fill_rect(0.0, 0.0, width, height);
 
-    let can_x = width * 0.25;
-    let can_y = height * 0.6;
+    // Border
+    ctx.set_stroke_style(&"#000000".into()); // Black
+    ctx.stroke_rect(0.0, 0.0, width, height);
+
+    // Centered can
+    let can_x = width / 2.0;
+    let can_y = height / 2.0 + 40.0; // Slightly lower to fit spray
+
     let spray_origin_x = can_x;
     let spray_origin_y = can_y - 80.0 - 10.0 - 5.0;
 
