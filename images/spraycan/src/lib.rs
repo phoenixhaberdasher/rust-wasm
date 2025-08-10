@@ -12,24 +12,31 @@ pub fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
     ctx.set_stroke_style(&"#000000".into()); // Black
     ctx.stroke_rect(0.0, 0.0, width, height);
 
-    // Sanity check: black squares in corners
-    ctx.set_fill_style(&"#000000".into()); // Black
+    // Corner squares
     let size = 5.0;
+    ctx.set_fill_style(&"#000000".into());
     ctx.fill_rect(0.0, 0.0, size, size); // Top-left
     ctx.fill_rect(width - size, 0.0, size, size); // Top-right
     ctx.fill_rect(0.0, height - size, size, size); // Bottom-left
     ctx.fill_rect(width - size, height - size, size, size); // Bottom-right
 
-    // Centered can
+    // Spray can centered
     let can_x = width / 2.0;
-    let can_y = height / 2.0 + 40.0;
+    let can_y = height / 2.0;
 
-    let spray_origin_x = can_x;
-    let spray_origin_y = can_y - 80.0 - 10.0 - 5.0;
+    // Spray origin: right side of the can's neck
+    let spray_origin_x = can_x + 15.0; // right edge of can
+    let spray_origin_y = can_y - 80.0 - 10.0 - 5.0; // top of can
+
+    // Red dot at spray origin for debugging
+    ctx.set_fill_style(&"#FF0000".into());
+    ctx.begin_path();
+    ctx.arc(spray_origin_x, spray_origin_y, 3.0, 0.0, 2.0 * PI).unwrap();
+    ctx.fill();
 
     draw_spray_can(ctx, can_x, can_y);
-    draw_cone(ctx, spray_origin_x, spray_origin_y, -PI / 6.0, PI / 8.0);
-    draw_particles(ctx, spray_origin_x, spray_origin_y, PI / 8.0, 150, -PI / 6.0);
+    draw_cone(ctx, spray_origin_x, spray_origin_y, 0.0, PI / 8.0); // spray to the right
+    draw_particles(ctx, spray_origin_x, spray_origin_y, PI / 8.0, 150, 0.0); // angle = 0 (right)
 }
 
 fn draw_spray_can(ctx: &CanvasRenderingContext2d, x: f64, y: f64) {
@@ -66,7 +73,7 @@ fn draw_spray_can(ctx: &CanvasRenderingContext2d, x: f64, y: f64) {
 
     // Nozzle
     ctx.begin_path();
-    ctx.arc(x, y - body_height - neck_height - 5.0, 4.0, 0.0, 2.0 * PI).unwrap();
+    ctx.arc(x + radius, y - body_height - neck_height - 5.0, 4.0, 0.0, 2.0 * PI).unwrap();
     ctx.set_fill_style(&"#D8BFD8".into()); // Pale purple
     ctx.fill();
 }
