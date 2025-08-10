@@ -8,7 +8,8 @@ use std::rc::Rc;
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-    let window: Window = web_sys::window().unwrap();
+    let window = web_sys::window().unwrap();
+    let window_clone = window.clone();
     let document: Document = window.document().unwrap();
     let canvas: HtmlCanvasElement = document
         .get_element_by_id("canvas")
@@ -24,7 +25,7 @@ pub fn start() -> Result<(), JsValue> {
 
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         draw_spray(&context);
-        let _ = window
+        let _ = window_clone
             .request_animation_frame(f.borrow().as_ref().unwrap().as_ref().unchecked_ref());
     }) as Box<dyn FnMut()>));
 
@@ -39,7 +40,7 @@ fn draw_spray(ctx: &CanvasRenderingContext2d) {
     let height = ctx.canvas().unwrap().height() as f64;
 
     // Clear canvas
-    ctx.set_fill_style(&JsValue::from_str("white"));
+    ctx.set_fill_style(&"white".into());
     ctx.fill_rect(0.0, 0.0, width, height);
 
     // Spray can nozzle position
@@ -65,7 +66,7 @@ fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread:
         y + spread * (angle + cone_angle).sin(),
     );
     ctx.close_path();
-    ctx.set_fill_style(&JsValue::from_str("lightgray"));
+    ctx.set_fill_style(&"lightgray".into());
     ctx.fill();
 }
 
@@ -76,7 +77,7 @@ fn draw_particles(ctx: &CanvasRenderingContext2d, x: f64, y: f64, spread: f64, c
         let distance = random_range(0.0, spread);
         let px = x + distance * angle.cos();
         let py = y + distance * angle.sin();
-        ctx.set_fill_style(&JsValue::from_str(random_color()));
+        ctx.set_fill_style(&random_color().into());
         ctx.fill_rect(px, py, 2.0, 2.0);
     }
 }
