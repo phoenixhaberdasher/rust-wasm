@@ -39,18 +39,43 @@ fn draw_spray(ctx: &CanvasRenderingContext2d) {
     let width = ctx.canvas().unwrap().width() as f64;
     let height = ctx.canvas().unwrap().height() as f64;
 
-    // Clear canvas
     ctx.set_fill_style(&"white".into());
     ctx.fill_rect(0.0, 0.0, width, height);
 
-    // Spray can nozzle position
-    let nozzle_x = width / 2.0;
-    let nozzle_y = height - 50.0;
-    let spread = 100.0;
-    let particle_count = 300;
+    // Spray angle and spread
+    let spray_angle = 0.0; // Rightward (3 o'clock)
+    let spread = 60.0;
+    let particle_count = 200;
 
-    draw_cone(ctx, nozzle_x, nozzle_y, -PI / 2.0, spread);
-    draw_particles(ctx, nozzle_x, nozzle_y, spread, particle_count);
+    // Spray can position (left side, vertically centered)
+    let can_x = width * 0.25;
+    let can_y = height * 0.5;
+
+    draw_spray_can(ctx, can_x, can_y);
+    draw_cone(ctx, can_x, can_y, spray_angle, spread);
+    draw_particles(ctx, can_x, can_y, spread, particle_count, spray_angle);
+}
+
+fn draw_spray_can(ctx: &CanvasRenderingContext2d, x: f64, y: f64) {
+    let body_width = 20.0;
+    let body_height = 60.0;
+    let bend_offset = 10.0;
+
+    // Body with bend
+    ctx.begin_path();
+    ctx.move_to(x, y);
+    ctx.line_to(x, y - body_height);
+    ctx.line_to(x + body_width, y - body_height + bend_offset);
+    ctx.line_to(x + body_width, y + bend_offset);
+    ctx.close_path();
+    ctx.set_fill_style(&"#333".into());
+    ctx.fill();
+
+    // Nozzle
+    ctx.begin_path();
+    ctx.arc(x + body_width + 5.0, y - body_height / 2.0, 5.0, 0.0, 2.0 * PI).unwrap();
+    ctx.set_fill_style(&"#666".into());
+    ctx.fill();
 }
 
 fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread: f64) {
@@ -70,13 +95,20 @@ fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread:
     ctx.fill();
 }
 
-fn draw_particles(ctx: &CanvasRenderingContext2d, x: f64, y: f64, spread: f64, count: usize) {
+fn draw_particles(
+    ctx: &CanvasRenderingContext2d,
+    x: f64,
+    y: f64,
+    spread: f64,
+    count: usize,
+    angle: f64,
+) {
     let cone_angle = PI / 6.0;
     for _ in 0..count {
-        let angle = random_range(-cone_angle, cone_angle) - PI / 2.0;
+        let offset = random_range(-cone_angle, cone_angle);
         let distance = random_range(0.0, spread);
-        let px = x + distance * angle.cos();
-        let py = y + distance * angle.sin();
+        let px = x + distance * (angle + offset).cos();
+        let py = y + distance * (angle + offset).sin();
         ctx.set_fill_style(&random_color().into());
         ctx.fill_rect(px, py, 2.0, 2.0);
     }
