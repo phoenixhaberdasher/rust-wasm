@@ -59,10 +59,23 @@ pub fn start() -> Result<(), JsValue> {
     Ok(())
 }
 
+// fn resize_and_draw(canvas: &HtmlCanvasElement, ctx: &CanvasRenderingContext2d) {
+//     let rect = canvas
+//         .dyn_ref::<HtmlElement>() // ✅ Correct cast to HtmlElement
+//         .unwrap()
+//         .get_bounding_client_rect();
+
+//     canvas.set_width(rect.width() as u32);
+//     canvas.set_height(rect.height() as u32);
+
+//     log(&format!("📐 Canvas resized to {}x{}", rect.width(), rect.height()));
+
+//     draw(ctx, rect.width(), rect.height());
+// }
+
 fn resize_and_draw(canvas: &HtmlCanvasElement, ctx: &CanvasRenderingContext2d) {
     let rect = canvas
-        .dyn_ref::<HtmlElement>() // ✅ Correct cast to HtmlElement
-        .unwrap()
+        .unchecked_ref::<Element>() // ✅ Correct cast to Element
         .get_bounding_client_rect();
 
     canvas.set_width(rect.width() as u32);
