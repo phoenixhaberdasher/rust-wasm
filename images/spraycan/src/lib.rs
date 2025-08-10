@@ -1,81 +1,128 @@
 use wasm_bindgen::prelude::*;
-use web_sys::CanvasRenderingContext2d;
+use wasm_bindgen::JsCast;
+use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement, EventTarget, console};
 use std::f64::consts::PI;
 
-#[wasm_bindgen]
-pub fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
+fn log(msg: &str) {
+    console::log_1(&msg.into());
+}
+
+#[wasm_bindgen(start)]
+pub fn start() -> Result<(), JsValue> {
+    log("Starting WASM module");
+
+    let window = window().unwrap();
+    let document = window.document().unwrap();
+    let canvas = document.get_element_by_id("canvas")
+        .unwrap()
+        .dyn_into::<HtmlCanvasElement>()?;
+
+    let ctx = canvas
+        .get_context("2d")?
+        .unwrap()
+        .dyn_into::<CanvasRenderingContext2d>()?;
+
+    log("Canvas and context acquired");
+
+    // Initial draw
+    resize_and_draw(&canvas, &ctx);
+
+    // Set up resize listener
+    let closure = Closure::wrap(Box::new(move || {
+        log("Window resized");
+
+        let window = window().unwrap();
+        let document = window.document().unwrap();
+        let canvas = document.get_element_by_id("canvas")
+            .unwrap()
+            .dyn_into::<HtmlCanvasElement>()
+            .unwrap();
+        let ctx = canvas
+            .get_context("2d")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<CanvasRenderingContext2d>()
+            .unwrap();
+
+        resize_and_draw(&canvas, &ctx);
+    }) as Box<dyn FnMut()>);
+
+    let et: &EventTarget = window.as_ref();
+    et.add_event_listener_with_callback("resize", closure.as_ref().unchecked_ref())?;
+    closure.forget();
+
+    log("Resize listener set");
+
+    Ok(())
+}
+
+fn resize_and_draw(canvas: &HtmlCanvasElement, ctx: &CanvasRenderingContext2d) {
+    let rect = canvas.get_bounding_client_rect();
+    canvas.set_width(rect.width() as u32);
+    canvas.set_height(rect.height() as u32);
+
+    log(&format!("Canvas resized to {}x{}", rect.width(), rect.height()));
+
+    draw(ctx, rect.width(), rect.height());
+}
+
+fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
+    log("Starting draw function");
+
     // Background
-    ctx.set_fill_style(&"#ADD8E6".into()); // Light blue
+    ctx.set_fill_style(&"#ADD8E6".into());
     ctx.fill_rect(0.0, 0.0, width, height);
+    log("Background filled");
 
     // Border
-    ctx.set_stroke_style(&"#000000".into()); // Black
+    ctx.set_stroke_style(&"#000000".into());
     ctx.stroke_rect(0.0, 0.0, width, height);
+    log("Border drawn");
 
     // Corner squares
     let size = 5.0;
     ctx.set_fill_style(&"#000000".into());
-    ctx.fill_rect(0.0, 0.0, size, size); // Top-left
-    ctx.fill_rect(width - size, 0.0, size, size); // Top-right
-    ctx.fill_rect(0.0, height - size, size, size); // Bottom-left
-    ctx.fill_rect(width - size, height - size, size, size); // Bottom-right
+    ctx.fill_rect(0.0, 0.0, size, size);
+    ctx.fill_rect(width - size, 0.0, size, size);
+    ctx.fill_rect(0.0, height - size, size, size);
+    ctx.fill_rect(width - size, height - size, size, size);
+    log("Corner squares drawn");
 
-    // Spray can centered
+    // Spray can center
     let can_x = width / 2.0;
     let can_y = height / 2.0;
+    log(&format!("Spray can center at ({}, {})", can_x, can_y));
 
-    // Spray origin: right side of the can's neck
-    let spray_origin_x = can_x + 15.0; // right edge of can
-    let spray_origin_y = can_y - 80.0 - 10.0 - 5.0; // top of can
+    // Spray origin — slightly above the can
+    let spray_origin_x = can_x;
+    let spray_origin_y = can_y - 100.0;
+    log(&format!("Spray origin at ({}, {})", spray_origin_x, spray_origin_y));
 
-    // Red dot at spray origin for debugging
+    // Spray origin dot
     ctx.set_fill_style(&"#FF0000".into());
     ctx.begin_path();
-    ctx.arc(spray_origin_x, spray_origin_y, 3.0, 0.0, 2.0 * PI).unwrap();
+    ctx.arc(spray_origin_x, spray_origin_y, 4.0, 0.0, 2.0 * PI).unwrap();
     ctx.fill();
+    log("Spray origin dot drawn");
 
     draw_spray_can(ctx, can_x, can_y);
-    draw_cone(ctx, spray_origin_x, spray_origin_y, 0.0, PI / 8.0); // spray to the right
-    draw_particles(ctx, spray_origin_x, spray_origin_y, PI / 8.0, 150, 0.0); // angle = 0 (right)
+    log("Spray can drawn");
+
+    draw_cone(ctx, spray_origin_x, spray_origin_y, 0.0, PI / 8.0);
+    log("Spray cone drawn");
+
+    draw_particles(ctx, spray_origin_x, spray_origin_y, PI / 8.0, 150, 0.0);
+    log("Spray particles drawn");
+
+    log("Draw function complete");
 }
 
+// Stub functions — replace with your actual implementations
 fn draw_spray_can(ctx: &CanvasRenderingContext2d, x: f64, y: f64) {
-    let body_width = 30.0;
-    let body_height = 80.0;
-    let neck_height = 10.0;
-    let radius = body_width / 2.0;
-
-    // Bent body shape
-    ctx.begin_path();
-    ctx.move_to(x - radius, y);
-    ctx.bezier_curve_to(x - radius - 5.0, y - body_height / 2.0, x - radius + 5.0, y - body_height, x - radius, y - body_height);
-    ctx.line_to(x + radius, y - body_height);
-    ctx.bezier_curve_to(x + radius + 5.0, y - body_height / 2.0, x + radius - 5.0, y, x + radius, y);
-    ctx.close_path();
-    ctx.set_fill_style(&"#800080".into()); // Purple body
-    ctx.fill();
-
-    // Rounded top
-    ctx.begin_path();
-    ctx.arc(x, y - body_height, radius, PI, 0.0).unwrap();
-    ctx.set_fill_style(&"#9932CC".into()); // Lighter purple
-    ctx.fill();
-
-    // Neck
-    ctx.begin_path();
-    ctx.move_to(x - radius / 2.0, y - body_height);
-    ctx.line_to(x - radius / 2.0, y - body_height - neck_height);
-    ctx.line_to(x + radius / 2.0, y - body_height - neck_height);
-    ctx.line_to(x + radius / 2.0, y - body_height);
-    ctx.close_path();
-    ctx.set_fill_style(&"#BA55D3".into()); // Even lighter purple
-    ctx.fill();
-
-    // Nozzle
-    ctx.begin_path();
-    ctx.arc(x + radius, y - body_height - neck_height - 5.0, 4.0, 0.0, 2.0 * PI).unwrap();
-    ctx.set_fill_style(&"#D8BFD8".into()); // Pale purple
-    ctx.fill();
+    ctx.set_fill_style(&"#808080".into());
+    ctx.fill_rect(x - 20.0, y - 80.0, 40.0, 80.0); // Can body
+    ctx.set_fill_style(&"#000000".into());
+    ctx.fill_rect(x - 5.0, y - 90.0, 10.0, 10.0);  // Nozzle
 }
 
 fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread: f64) {
@@ -88,26 +135,26 @@ fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread:
     let x2 = x + length * right_angle.cos();
     let y2 = y + length * right_angle.sin();
 
+    ctx.set_fill_style(&"rgba(255, 0, 0, 0.2)".into());
     ctx.begin_path();
     ctx.move_to(x, y);
     ctx.line_to(x1, y1);
     ctx.line_to(x2, y2);
     ctx.close_path();
-    ctx.set_fill_style(&"rgba(128,0,128,0.2)".into()); // Transparent purple
     ctx.fill();
 }
 
 fn draw_particles(ctx: &CanvasRenderingContext2d, x: f64, y: f64, spread: f64, count: usize, angle: f64) {
-    let max_distance = 100.0;
-    for _ in 0..count {
-        let rand_angle = angle + (js_sys::Math::random() - 0.5) * spread;
-        let distance = js_sys::Math::random() * max_distance;
-        let px = x + distance * rand_angle.cos();
-        let py = y + distance * rand_angle.sin();
+    use rand::Rng;
+    let mut rng = rand::thread_rng();
 
-        ctx.begin_path();
-        ctx.arc(px, py, 1.5, 0.0, 2.0 * PI).unwrap(); // Smaller particles
-        ctx.set_fill_style(&"#DA70D6".into()); // Orchid purple
-        ctx.fill();
+    ctx.set_fill_style(&"#FF0000".into());
+
+    for _ in 0..count {
+        let a = angle - spread / 2.0 + rng.gen::<f64>() * spread;
+        let r = rng.gen::<f64>() * 100.0;
+        let px = x + r * a.cos();
+        let py = y + r * a.sin();
+        ctx.fill_rect(px, py, 2.0, 2.0);
     }
 }
