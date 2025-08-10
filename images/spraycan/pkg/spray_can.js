@@ -214,11 +214,11 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_bezierCurveTo_87b5a6bb2649767e = function(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
         arg0.bezierCurveTo(arg1, arg2, arg3, arg4, arg5, arg6);
     };
-    imports.wbg.__wbg_clearRect_8e4ba7ea0e06711a = function(arg0, arg1, arg2, arg3, arg4) {
-        arg0.clearRect(arg1, arg2, arg3, arg4);
-    };
     imports.wbg.__wbg_closePath_936abd634768b284 = function(arg0) {
         arg0.closePath();
+    };
+    imports.wbg.__wbg_fillRect_c38d5d56492a2368 = function(arg0, arg1, arg2, arg3, arg4) {
+        arg0.fillRect(arg1, arg2, arg3, arg4);
     };
     imports.wbg.__wbg_fill_34096e49d2aaa307 = function(arg0) {
         arg0.fill();
@@ -235,6 +235,12 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbg_setfillStyle_4f8f616d87dea4df = function(arg0, arg1) {
         arg0.fillStyle = arg1;
+    };
+    imports.wbg.__wbg_setstrokeStyle_88eaacb0e9a0c645 = function(arg0, arg1) {
+        arg0.strokeStyle = arg1;
+    };
+    imports.wbg.__wbg_strokeRect_bfa0a2d3cd838033 = function(arg0, arg1, arg2, arg3, arg4) {
+        arg0.strokeRect(arg1, arg2, arg3, arg4);
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
         const ret = debugString(arg1);
