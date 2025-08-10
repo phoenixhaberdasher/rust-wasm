@@ -1,7 +1,8 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement, EventTarget, console};
+use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement, Element, EventTarget, console};
 use std::f64::consts::PI;
+use rand::Rng;
 
 fn log(msg: &str) {
     console::log_1(&msg.into());
@@ -9,10 +10,10 @@ fn log(msg: &str) {
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-    log("Starting WASM module");
+    log("🚀 Starting WASM module");
 
-    let window = window().unwrap();
-    let document = window.document().unwrap();
+    let win = window().unwrap();
+    let document = win.document().unwrap();
     let canvas = document.get_element_by_id("canvas")
         .unwrap()
         .dyn_into::<HtmlCanvasElement>()?;
@@ -22,17 +23,17 @@ pub fn start() -> Result<(), JsValue> {
         .unwrap()
         .dyn_into::<CanvasRenderingContext2d>()?;
 
-    log("Canvas and context acquired");
+    log("✅ Canvas and context acquired");
 
     // Initial draw
     resize_and_draw(&canvas, &ctx);
 
     // Set up resize listener
     let closure = Closure::wrap(Box::new(move || {
-        log("Window resized");
+        log("🔄 Window resized");
 
-        let window = window().unwrap();
-        let document = window.document().unwrap();
+        let win = window().unwrap();
+        let document = win.document().unwrap();
         let canvas = document.get_element_by_id("canvas")
             .unwrap()
             .dyn_into::<HtmlCanvasElement>()
@@ -47,81 +48,84 @@ pub fn start() -> Result<(), JsValue> {
         resize_and_draw(&canvas, &ctx);
     }) as Box<dyn FnMut()>);
 
-    let et: &EventTarget = window.as_ref();
+    let et: &EventTarget = win.as_ref();
     et.add_event_listener_with_callback("resize", closure.as_ref().unchecked_ref())?;
     closure.forget();
 
-    log("Resize listener set");
+    log("📡 Resize listener set");
 
     Ok(())
 }
 
 fn resize_and_draw(canvas: &HtmlCanvasElement, ctx: &CanvasRenderingContext2d) {
-    let rect = canvas.get_bounding_client_rect();
+    let rect = canvas
+        .dyn_ref::<Element>()
+        .unwrap()
+        .get_bounding_client_rect();
+
     canvas.set_width(rect.width() as u32);
     canvas.set_height(rect.height() as u32);
 
-    log(&format!("Canvas resized to {}x{}", rect.width(), rect.height()));
+    log(&format!("📐 Canvas resized to {}x{}", rect.width(), rect.height()));
 
     draw(ctx, rect.width(), rect.height());
 }
 
 fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
-    log("Starting draw function");
+    log("🎨 Starting draw function");
 
     // Background
-    ctx.set_fill_style(&"#ADD8E6".into());
+    ctx.set_fill_style_with_str("#ADD8E6").unwrap();
     ctx.fill_rect(0.0, 0.0, width, height);
-    log("Background filled");
+    log("🟦 Background filled");
 
     // Border
-    ctx.set_stroke_style(&"#000000".into());
+    ctx.set_stroke_style_with_str("#000000").unwrap();
     ctx.stroke_rect(0.0, 0.0, width, height);
-    log("Border drawn");
+    log("⬛ Border drawn");
 
     // Corner squares
     let size = 5.0;
-    ctx.set_fill_style(&"#000000".into());
+    ctx.set_fill_style_with_str("#000000").unwrap();
     ctx.fill_rect(0.0, 0.0, size, size);
     ctx.fill_rect(width - size, 0.0, size, size);
     ctx.fill_rect(0.0, height - size, size, size);
     ctx.fill_rect(width - size, height - size, size, size);
-    log("Corner squares drawn");
+    log("🔲 Corner squares drawn");
 
     // Spray can center
     let can_x = width / 2.0;
     let can_y = height / 2.0;
-    log(&format!("Spray can center at ({}, {})", can_x, can_y));
+    log(&format!("📍 Spray can center at ({}, {})", can_x, can_y));
 
     // Spray origin — slightly above the can
     let spray_origin_x = can_x;
     let spray_origin_y = can_y - 100.0;
-    log(&format!("Spray origin at ({}, {})", spray_origin_x, spray_origin_y));
+    log(&format!("🎯 Spray origin at ({}, {})", spray_origin_x, spray_origin_y));
 
     // Spray origin dot
-    ctx.set_fill_style(&"#FF0000".into());
+    ctx.set_fill_style_with_str("#FF0000").unwrap();
     ctx.begin_path();
     ctx.arc(spray_origin_x, spray_origin_y, 4.0, 0.0, 2.0 * PI).unwrap();
     ctx.fill();
-    log("Spray origin dot drawn");
+    log("🔴 Spray origin dot drawn");
 
     draw_spray_can(ctx, can_x, can_y);
-    log("Spray can drawn");
+    log("🧴 Spray can drawn");
 
     draw_cone(ctx, spray_origin_x, spray_origin_y, 0.0, PI / 8.0);
-    log("Spray cone drawn");
+    log("📐 Spray cone drawn");
 
     draw_particles(ctx, spray_origin_x, spray_origin_y, PI / 8.0, 150, 0.0);
-    log("Spray particles drawn");
+    log("✨ Spray particles drawn");
 
-    log("Draw function complete");
+    log("✅ Draw function complete");
 }
 
-// Stub functions — replace with your actual implementations
 fn draw_spray_can(ctx: &CanvasRenderingContext2d, x: f64, y: f64) {
-    ctx.set_fill_style(&"#808080".into());
+    ctx.set_fill_style_with_str("#808080").unwrap();
     ctx.fill_rect(x - 20.0, y - 80.0, 40.0, 80.0); // Can body
-    ctx.set_fill_style(&"#000000".into());
+    ctx.set_fill_style_with_str("#000000").unwrap();
     ctx.fill_rect(x - 5.0, y - 90.0, 10.0, 10.0);  // Nozzle
 }
 
@@ -135,7 +139,7 @@ fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread:
     let x2 = x + length * right_angle.cos();
     let y2 = y + length * right_angle.sin();
 
-    ctx.set_fill_style(&"rgba(255, 0, 0, 0.2)".into());
+    ctx.set_fill_style_with_str("rgba(255, 0, 0, 0.2)").unwrap();
     ctx.begin_path();
     ctx.move_to(x, y);
     ctx.line_to(x1, y1);
@@ -145,10 +149,9 @@ fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread:
 }
 
 fn draw_particles(ctx: &CanvasRenderingContext2d, x: f64, y: f64, spread: f64, count: usize, angle: f64) {
-    use rand::Rng;
     let mut rng = rand::thread_rng();
 
-    ctx.set_fill_style(&"#FF0000".into());
+    ctx.set_fill_style_with_str("#FF0000").unwrap();
 
     for _ in 0..count {
         let a = angle - spread / 2.0 + rng.gen::<f64>() * spread;
