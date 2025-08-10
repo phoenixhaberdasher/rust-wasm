@@ -268,6 +268,10 @@ function __wbg_get_imports() {
         const ret = arg0.crypto;
         return ret;
     };
+    imports.wbg.__wbg_devicePixelRatio_68c391265f05d093 = function(arg0) {
+        const ret = arg0.devicePixelRatio;
+        return ret;
+    };
     imports.wbg.__wbg_document_d249400bd7bd996d = function(arg0) {
         const ret = arg0.document;
         return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
@@ -389,6 +393,9 @@ function __wbg_get_imports() {
         const ret = module.require;
         return ret;
     }, arguments) };
+    imports.wbg.__wbg_scale_4105cc7f9ba9c045 = function() { return handleError(function (arg0, arg1, arg2) {
+        arg0.scale(arg1, arg2);
+    }, arguments) };
     imports.wbg.__wbg_set_65595bdd868b3009 = function(arg0, arg1, arg2) {
         arg0.set(arg1, arg2 >>> 0);
     };
@@ -448,7 +455,7 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper80 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper81 = function(arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 17, __wbg_adapter_28);
         return ret;
     };
