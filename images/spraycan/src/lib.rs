@@ -1,125 +1,90 @@
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, Window, Document};
-use js_sys::Math;
+use web_sys::CanvasRenderingContext2d;
 use std::f64::consts::PI;
-use std::cell::RefCell;
-use std::rc::Rc;
 
-#[wasm_bindgen(start)]
-pub fn start() -> Result<(), JsValue> {
-    let window = web_sys::window().unwrap();
-    let window_clone = window.clone();
-    let document: Document = window.document().unwrap();
-    let canvas: HtmlCanvasElement = document
-        .get_element_by_id("canvas")
-        .unwrap()
-        .dyn_into::<HtmlCanvasElement>()?;
-    let context: CanvasRenderingContext2d = canvas
-        .get_context("2d")?
-        .unwrap()
-        .dyn_into::<CanvasRenderingContext2d>()?;
+#[wasm_bindgen]
+pub fn draw(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
+    ctx.clear_rect(0.0, 0.0, width, height);
 
-    let f: Rc<RefCell<Option<Closure<dyn FnMut()>>>> = Rc::new(RefCell::new(None));
-    let g = f.clone();
-
-    *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        draw_spray(&context);
-        let _ = window_clone
-            .request_animation_frame(f.borrow().as_ref().unwrap().as_ref().unchecked_ref());
-    }) as Box<dyn FnMut()>));
-
-    window
-        .request_animation_frame(g.borrow().as_ref().unwrap().as_ref().unchecked_ref())?;
-
-    Ok(())
-}
-
-fn draw_spray(ctx: &CanvasRenderingContext2d) {
-    let width = ctx.canvas().unwrap().width() as f64;
-    let height = ctx.canvas().unwrap().height() as f64;
-
-    ctx.set_fill_style(&"white".into());
-    ctx.fill_rect(0.0, 0.0, width, height);
-
-    // Spray angle and spread
-    let spray_angle = 0.0; // Rightward (3 o'clock)
-    let spread = 60.0;
-    let particle_count = 200;
-
-    // Spray can position (left side, vertically centered)
     let can_x = width * 0.25;
-    let can_y = height * 0.5;
+    let can_y = height * 0.6;
+    let spray_origin_x = can_x;
+    let spray_origin_y = can_y - 80.0 - 10.0 - 5.0;
 
     draw_spray_can(ctx, can_x, can_y);
-    draw_cone(ctx, can_x, can_y, spray_angle, spread);
-    draw_particles(ctx, can_x, can_y, spread, particle_count, spray_angle);
+    draw_cone(ctx, spray_origin_x, spray_origin_y, -PI / 6.0, PI / 8.0);
+    draw_particles(ctx, spray_origin_x, spray_origin_y, PI / 8.0, 150, -PI / 6.0);
 }
 
 fn draw_spray_can(ctx: &CanvasRenderingContext2d, x: f64, y: f64) {
-    let body_width = 20.0;
-    let body_height = 60.0;
-    let bend_offset = 10.0;
+    let body_width = 30.0;
+    let body_height = 80.0;
+    let neck_height = 10.0;
+    let radius = body_width / 2.0;
 
-    // Body with bend
+    // Bent body shape
     ctx.begin_path();
-    ctx.move_to(x, y);
-    ctx.line_to(x, y - body_height);
-    ctx.line_to(x + body_width, y - body_height + bend_offset);
-    ctx.line_to(x + body_width, y + bend_offset);
+    ctx.move_to(x - radius, y);
+    ctx.bezier_curve_to(x - radius - 5.0, y - body_height / 2.0, x - radius + 5.0, y - body_height, x - radius, y - body_height);
+    ctx.line_to(x + radius, y - body_height);
+    ctx.bezier_curve_to(x + radius + 5.0, y - body_height / 2.0, x + radius - 5.0, y, x + radius, y);
     ctx.close_path();
-    ctx.set_fill_style(&"#333".into());
+    ctx.set_fill_style(&"#800080".into()); // Purple body
+    ctx.fill();
+
+    // Rounded top
+    ctx.begin_path();
+    ctx.arc(x, y - body_height, radius, PI, 0.0).unwrap();
+    ctx.set_fill_style(&"#9932CC".into()); // Lighter purple
+    ctx.fill();
+
+    // Neck
+    ctx.begin_path();
+    ctx.move_to(x - radius / 2.0, y - body_height);
+    ctx.line_to(x - radius / 2.0, y - body_height - neck_height);
+    ctx.line_to(x + radius / 2.0, y - body_height - neck_height);
+    ctx.line_to(x + radius / 2.0, y - body_height);
+    ctx.close_path();
+    ctx.set_fill_style(&"#BA55D3".into()); // Even lighter purple
     ctx.fill();
 
     // Nozzle
     ctx.begin_path();
-    ctx.arc(x + body_width + 5.0, y - body_height / 2.0, 5.0, 0.0, 2.0 * PI).unwrap();
-    ctx.set_fill_style(&"#666".into());
+    ctx.arc(x, y - body_height - neck_height - 5.0, 4.0, 0.0, 2.0 * PI).unwrap();
+    ctx.set_fill_style(&"#D8BFD8".into()); // Pale purple
     ctx.fill();
 }
 
 fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread: f64) {
-    let cone_angle = PI / 6.0;
+    let length = 100.0;
+    let left_angle = angle - spread / 2.0;
+    let right_angle = angle + spread / 2.0;
+
+    let x1 = x + length * left_angle.cos();
+    let y1 = y + length * left_angle.sin();
+    let x2 = x + length * right_angle.cos();
+    let y2 = y + length * right_angle.sin();
+
     ctx.begin_path();
     ctx.move_to(x, y);
-    ctx.line_to(
-        x + spread * (angle - cone_angle).cos(),
-        y + spread * (angle - cone_angle).sin(),
-    );
-    ctx.line_to(
-        x + spread * (angle + cone_angle).cos(),
-        y + spread * (angle + cone_angle).sin(),
-    );
+    ctx.line_to(x1, y1);
+    ctx.line_to(x2, y2);
     ctx.close_path();
-    ctx.set_fill_style(&"lightgray".into());
+    ctx.set_fill_style(&"rgba(128,0,128,0.2)".into()); // Transparent purple
     ctx.fill();
 }
 
-fn draw_particles(
-    ctx: &CanvasRenderingContext2d,
-    x: f64,
-    y: f64,
-    spread: f64,
-    count: usize,
-    angle: f64,
-) {
-    let cone_angle = PI / 6.0;
+fn draw_particles(ctx: &CanvasRenderingContext2d, x: f64, y: f64, spread: f64, count: usize, angle: f64) {
+    let max_distance = 100.0;
     for _ in 0..count {
-        let offset = random_range(-cone_angle, cone_angle);
-        let distance = random_range(0.0, spread);
-        let px = x + distance * (angle + offset).cos();
-        let py = y + distance * (angle + offset).sin();
-        ctx.set_fill_style(&random_color().into());
-        ctx.fill_rect(px, py, 2.0, 2.0);
+        let rand_angle = angle + (js_sys::Math::random() - 0.5) * spread;
+        let distance = js_sys::Math::random() * max_distance;
+        let px = x + distance * rand_angle.cos();
+        let py = y + distance * rand_angle.sin();
+
+        ctx.begin_path();
+        ctx.arc(px, py, 1.5, 0.0, 2.0 * PI).unwrap(); // Smaller particles
+        ctx.set_fill_style(&"#DA70D6".into()); // Orchid purple
+        ctx.fill();
     }
-}
-
-fn random_range(min: f64, max: f64) -> f64 {
-    Math::random() * (max - min) + min
-}
-
-fn random_color() -> &'static str {
-    let colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF"];
-    let index = (Math::floor(Math::random() * colors.len() as f64)) as usize;
-    colors[index]
 }
