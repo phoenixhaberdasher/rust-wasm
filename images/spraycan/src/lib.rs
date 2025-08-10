@@ -38,21 +38,31 @@ pub fn start() -> Result<(), JsValue> {
 
     log("✅ Canvas and context acquired");
 
-    resize_canvas(&canvas);
+    resize_canvas(&canvas, &ctx);
 
     let particles = Rc::new(RefCell::new(Vec::new()));
     let particles_clone = particles.clone();
     let canvas_clone = canvas.clone();
     let ctx_clone = ctx.clone();
 
-    let spray_origin_x = canvas.width() as f64 / 2.0;
-    let spray_origin_y = canvas.height() as f64 / 2.0 - 100.0;
-
     let animate = Rc::new(RefCell::new(None));
     let animate_clone = animate.clone();
 
     *animate_clone.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        update_particles(&ctx_clone, &canvas_clone, &mut particles_clone.borrow_mut(), spray_origin_x, spray_origin_y);
+        let width = canvas_clone.width() as f64;
+        let height = canvas_clone.height() as f64;
+        let spray_origin_x = width / 2.0;
+        let spray_origin_y = height / 2.0 - height * 0.3;
+
+        update_particles(
+            &ctx_clone,
+            width,
+            height,
+            &mut particles_clone.borrow_mut(),
+            spray_origin_x,
+            spray_origin_y,
+        );
+
         request_animation_frame(animate.borrow().as_ref().unwrap());
     }) as Box<dyn FnMut()>));
 
@@ -75,8 +85,7 @@ pub fn start() -> Result<(), JsValue> {
             .dyn_into::<CanvasRenderingContext2d>()
             .unwrap();
 
-        resize_canvas(&canvas);
-        draw_static_scene(&ctx, canvas.width() as f64, canvas.height() as f64);
+        resize_canvas(&canvas, &ctx);
     }) as Box<dyn FnMut()>);
 
     let et: &EventTarget = win.as_ref();
@@ -85,87 +94,35 @@ pub fn start() -> Result<(), JsValue> {
 
     log("📡 Resize listener set");
 
-    draw_static_scene(&ctx, canvas.width() as f64, canvas.height() as f64);
-
     Ok(())
 }
 
-fn resize_canvas(canvas: &HtmlCanvasElement) {
+fn resize_canvas(canvas: &HtmlCanvasElement, ctx: &CanvasRenderingContext2d) {
+    let window = window().unwrap();
+    let dpr = window.device_pixel_ratio();
+
     let rect = canvas
         .dyn_ref::<HtmlElement>()
         .unwrap()
         .get_bounding_client_rect();
 
-    canvas.set_width(rect.width() as u32);
-    canvas.set_height(rect.height() as u32);
+    canvas.set_width((rect.width() * dpr) as u32);
+    canvas.set_height((rect.height() * dpr) as u32);
 
-    log(&format!("📐 Canvas resized to {}x{}", rect.width(), rect.height()));
-}
+    ctx.scale(dpr, dpr).unwrap();
 
-fn draw_static_scene(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
-    log("🎨 Drawing static scene");
-
-    // Background
-    ctx.set_fill_style(&JsValue::from_str("#ADD8E6"));
-    ctx.fill_rect(0.0, 0.0, width, height);
-
-    // Border
-    ctx.set_stroke_style(&JsValue::from_str("#000000"));
-    ctx.stroke_rect(0.0, 0.0, width, height);
-
-    // Corner squares
-    let size = 5.0;
-    ctx.set_fill_style(&JsValue::from_str("#000000"));
-    ctx.fill_rect(0.0, 0.0, size, size);
-    ctx.fill_rect(width - size, 0.0, size, size);
-    ctx.fill_rect(0.0, height - size, size, size);
-    ctx.fill_rect(width - size, height - size, size, size);
-
-    // Spray can
-    let can_x = width / 2.0;
-    let can_y = height / 2.0;
-    draw_spray_can(ctx, can_x, can_y);
-
-    // Spray cone
-    let spray_origin_x = can_x;
-    let spray_origin_y = can_y - 100.0;
-    draw_cone(ctx, spray_origin_x, spray_origin_y, 0.0, PI / 8.0);
-}
-
-fn draw_spray_can(ctx: &CanvasRenderingContext2d, x: f64, y: f64) {
-    ctx.set_fill_style(&JsValue::from_str("#808080"));
-    ctx.fill_rect(x - 20.0, y - 80.0, 40.0, 80.0); // Can body
-    ctx.set_fill_style(&JsValue::from_str("#000000"));
-    ctx.fill_rect(x - 5.0, y - 90.0, 10.0, 10.0);  // Nozzle
-}
-
-fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread: f64) {
-    let length = 100.0;
-    let left_angle = angle - spread / 2.0;
-    let right_angle = angle + spread / 2.0;
-
-    let x1 = x + length * left_angle.cos();
-    let y1 = y + length * left_angle.sin();
-    let x2 = x + length * right_angle.cos();
-    let y2 = y + length * right_angle.sin();
-
-    ctx.set_fill_style(&JsValue::from_str("rgba(255, 0, 0, 0.2)"));
-    ctx.begin_path();
-    ctx.move_to(x, y);
-    ctx.line_to(x1, y1);
-    ctx.line_to(x2, y2);
-    ctx.close_path();
-    ctx.fill();
+    log(&format!("📐 Canvas resized to {}x{} (DPR: {})", rect.width(), rect.height(), dpr));
 }
 
 fn update_particles(
     ctx: &CanvasRenderingContext2d,
-    canvas: &HtmlCanvasElement,
+    width: f64,
+    height: f64,
     particles: &mut Vec<Particle>,
     origin_x: f64,
     origin_y: f64,
 ) {
-    draw_static_scene(ctx, canvas.width() as f64, canvas.height() as f64);
+    draw_static_scene(ctx, width, height);
 
     let mut rng = rand::thread_rng();
 
@@ -198,6 +155,61 @@ fn update_particles(
     }
 
     particles.retain(|p| p.life > 0.0);
+}
+
+fn draw_static_scene(ctx: &CanvasRenderingContext2d, width: f64, height: f64) {
+    // Background
+    ctx.set_fill_style(&JsValue::from_str("#ADD8E6"));
+    ctx.fill_rect(0.0, 0.0, width, height);
+
+    // Border
+    ctx.set_stroke_style(&JsValue::from_str("#000000"));
+    ctx.stroke_rect(0.0, 0.0, width, height);
+
+    // Corner squares
+    let size = 5.0;
+    ctx.set_fill_style(&JsValue::from_str("#000000"));
+    ctx.fill_rect(0.0, 0.0, size, size);
+    ctx.fill_rect(width - size, 0.0, size, size);
+    ctx.fill_rect(0.0, height - size, size, size);
+    ctx.fill_rect(width - size, height - size, size, size);
+
+    // Spray can
+    let can_x = width / 2.0;
+    let can_y = height / 2.0;
+    let scale = width.min(height) / 300.0;
+    draw_spray_can(ctx, can_x, can_y, scale);
+
+    // Spray cone
+    let spray_origin_x = can_x;
+    let spray_origin_y = can_y - height * 0.3;
+    draw_cone(ctx, spray_origin_x, spray_origin_y, 0.0, PI / 8.0);
+}
+
+fn draw_spray_can(ctx: &CanvasRenderingContext2d, x: f64, y: f64, scale: f64) {
+    ctx.set_fill_style(&JsValue::from_str("#808080"));
+    ctx.fill_rect(x - 20.0 * scale, y - 80.0 * scale, 40.0 * scale, 80.0 * scale); // Can body
+    ctx.set_fill_style(&JsValue::from_str("#000000"));
+    ctx.fill_rect(x - 5.0 * scale, y - 90.0 * scale, 10.0 * scale, 10.0 * scale);  // Nozzle
+}
+
+fn draw_cone(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, spread: f64) {
+    let length = 100.0;
+    let left_angle = angle - spread / 2.0;
+    let right_angle = angle + spread / 2.0;
+
+    let x1 = x + length * left_angle.cos();
+    let y1 = y + length * left_angle.sin();
+    let x2 = x + length * right_angle.cos();
+    let y2 = y + length * right_angle.sin();
+
+    ctx.set_fill_style(&JsValue::from_str("rgba(255, 0, 0, 0.2)"));
+    ctx.begin_path();
+    ctx.move_to(x, y);
+    ctx.line_to(x1, y1);
+    ctx.line_to(x2, y2);
+    ctx.close_path();
+    ctx.fill();
 }
 
 fn request_animation_frame(f: &Closure<dyn FnMut()>) {
