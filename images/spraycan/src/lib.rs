@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{
-    window, CanvasRenderingContext2d, HtmlCanvasElement, Element, EventTarget, console,
+    window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlElement, EventTarget, console,
 };
 use std::f64::consts::PI;
 use rand::Rng;
@@ -61,7 +61,7 @@ pub fn start() -> Result<(), JsValue> {
 
 fn resize_and_draw(canvas: &HtmlCanvasElement, ctx: &CanvasRenderingContext2d) {
     let rect = canvas
-        .dyn_ref::<Element>() // ✅ Corrected cast
+        .dyn_ref::<HtmlElement>() // ✅ Correct cast to HtmlElement
         .unwrap()
         .get_bounding_client_rect();
 
