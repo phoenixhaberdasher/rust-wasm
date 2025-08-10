@@ -1,17 +1,19 @@
 /* tslint:disable */
 /* eslint-disable */
-export function draw(ctx: CanvasRenderingContext2D, width: number, height: number): void;
+export function start(): void;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly draw: (a: any, b: number, c: number) => void;
+  readonly start: () => void;
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
+  readonly __wbindgen_export_3: WebAssembly.Table;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+  readonly _dyn_core__ops__function__FnMut_____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hc5a8e836832b8fef: (a: number, b: number) => void;
   readonly __wbindgen_start: () => void;
 }
 
