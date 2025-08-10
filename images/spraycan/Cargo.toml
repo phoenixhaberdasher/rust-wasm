@@ -11,10 +11,12 @@ wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = [
     "CanvasRenderingContext2d",
     "HtmlCanvasElement",
+    "HtmlElement",            # ✅ Required for get_bounding_client_rect
+    "DomRect",                # ✅ Required for the return type
     "console",
     "Window",
     "Document",
-    "Element"
+    "EventTarget"
 ] }
 rand = { version = "0.8", features = ["std", "getrandom"] }
 getrandom = { version = "0.2", features = ["js"] }
